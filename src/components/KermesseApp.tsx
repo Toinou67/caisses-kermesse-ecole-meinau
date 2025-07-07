@@ -4,6 +4,7 @@ import { ArticleCard } from "./ArticleCard";
 import { CategoryFilter } from "./CategoryFilter";
 import { SalesTable } from "./SalesTable";
 import { ArticleForm } from "./ArticleForm";
+import { DirectSaleForm } from "./DirectSaleForm";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,6 @@ import {
 import { Edit, BarChart3, ShoppingCart, Settings, RotateCcw } from "lucide-react";
 import { mockArticles, mockSales } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
-import heroImage from "@/assets/kermesse-hero.jpg";
 
 const CASH_REGISTERS = ['Caisse 1', 'Caisse 2', 'Caisse 3', 'Caisse 4'];
 
@@ -97,6 +97,24 @@ export const KermesseApp = () => {
     toast({
       title: "Vente enregistrée! 🎉",
       description: `${article.name} - ${article.price.toFixed(2)}€ (${selectedCashRegister})`,
+    });
+  };
+
+  const handleDirectSale = (articleName: string, price: number) => {
+    const newSale: Sale = {
+      id: Date.now().toString(),
+      articleId: Date.now().toString(),
+      articleName,
+      price,
+      timestamp: new Date(),
+      cashRegister: selectedCashRegister
+    };
+
+    setSales(prev => [...prev, newSale]);
+
+    toast({
+      title: "Vente enregistrée! 🎉",
+      description: `${articleName} - ${price.toFixed(2)}€ (${selectedCashRegister})`,
     });
   };
 
@@ -176,11 +194,7 @@ export const KermesseApp = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div 
-          className="h-32 bg-cover bg-center relative"
-          style={{ backgroundImage: `url(${heroImage})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-festive/95"></div>
+        <div className="h-32 bg-gradient-festive relative">
           <div className="relative z-10 p-6 text-white">
             <h1 className="text-4xl font-bold mb-2">🎪 Kermesse Manager</h1>
             <div className="flex items-center gap-4 flex-wrap">
@@ -328,6 +342,8 @@ export const KermesseApp = () => {
                 </SelectContent>
               </Select>
             </div>
+
+            <DirectSaleForm onAddSale={handleDirectSale} />
 
             <SalesTable 
               articles={articles}

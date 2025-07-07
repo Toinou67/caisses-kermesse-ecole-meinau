@@ -163,6 +163,15 @@ export const KermesseApp = () => {
     .filter(sale => selectedCashRegisterForStats === 'all' || sale.cashRegister === selectedCashRegisterForStats)
     .length;
 
+  // Stats for current cash register
+  const currentCashRegisterRevenue = sales
+    .filter(sale => sale.cashRegister === selectedCashRegister)
+    .reduce((total, sale) => total + sale.price, 0);
+
+  const currentCashRegisterSales = sales
+    .filter(sale => sale.cashRegister === selectedCashRegister)
+    .length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20">
       {/* Header */}
@@ -171,7 +180,7 @@ export const KermesseApp = () => {
           className="h-32 bg-cover bg-center relative"
           style={{ backgroundImage: `url(${heroImage})` }}
         >
-          <div className="absolute inset-0 bg-gradient-festive/80"></div>
+          <div className="absolute inset-0 bg-gradient-festive/95"></div>
           <div className="relative z-10 p-6 text-white">
             <h1 className="text-4xl font-bold mb-2">🎪 Kermesse Manager</h1>
             <div className="flex items-center gap-4 flex-wrap">
@@ -220,7 +229,10 @@ export const KermesseApp = () => {
               </AlertDialog>
 
               <Badge variant="secondary" className="bg-white/20 text-white">
-                {todaySalesCount} ventes aujourd'hui
+                {currentCashRegisterSales} ventes - {currentCashRegisterRevenue.toFixed(2)}€
+              </Badge>
+              <Badge variant="secondary" className="bg-white/20 text-white">
+                {todaySalesCount} ventes total
               </Badge>
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {totalRevenue.toFixed(2)}€ total

@@ -15,7 +15,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Edit, BarChart3, ShoppingCart, Settings } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Edit, BarChart3, ShoppingCart, Settings, RotateCcw } from "lucide-react";
 import { mockArticles, mockSales } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 import heroImage from "@/assets/kermesse-hero.jpg";
@@ -121,6 +132,29 @@ export const KermesseApp = () => {
     });
   };
 
+  const handleResetCashRegister = () => {
+    // Supprimer toutes les ventes de la caisse actuelle
+    const cashRegisterSales = sales.filter(sale => sale.cashRegister === selectedCashRegister);
+    setSales(prev => prev.filter(sale => sale.cashRegister !== selectedCashRegister));
+    
+    // Décrémenter les compteurs de ventes des articles concernés
+    const salesByArticle = cashRegisterSales.reduce((acc, sale) => {
+      acc[sale.articleId] = (acc[sale.articleId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    setArticles(prev => prev.map(article => ({
+      ...article,
+      sales: Math.max(0, article.sales - (salesByArticle[article.id] || 0))
+    })));
+
+    toast({
+      title: "Caisse réinitialisée! 🔄",
+      description: `Toutes les ventes de ${selectedCashRegister} ont été supprimées`,
+      variant: "destructive",
+    });
+  };
+
   const totalRevenue = sales
     .filter(sale => selectedCashRegisterForStats === 'all' || sale.cashRegister === selectedCashRegisterForStats)
     .reduce((total, sale) => total + sale.price, 0);
@@ -140,7 +174,7 @@ export const KermesseApp = () => {
           <div className="absolute inset-0 bg-gradient-festive/80"></div>
           <div className="relative z-10 p-6 text-white">
             <h1 className="text-4xl font-bold mb-2">🎪 Kermesse Manager</h1>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Select value={selectedCashRegister} onValueChange={setSelectedCashRegister}>
                 <SelectTrigger className="w-40 bg-white/20 text-white border-white/30">
                   <SelectValue />
@@ -153,6 +187,38 @@ export const KermesseApp = () => {
                   ))}
                 </SelectContent>
               </Select>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Réinitialiser
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Réinitialiser la caisse ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Cette action va supprimer définitivement toutes les ventes de <strong>{selectedCashRegister}</strong>.
+                      Cette action ne peut pas être annulée.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleResetCashRegister}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Réinitialiser
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {todaySalesCount} ventes aujourd'hui
               </Badge>

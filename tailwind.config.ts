@@ -52,6 +52,12 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
+				// Kermesse custom colors
+				festive: {
+					green: 'hsl(var(--festive-green))',
+					orange: 'hsl(var(--festive-orange))',
+					purple: 'hsl(var(--festive-purple))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
@@ -62,6 +68,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				}
+			},
+			backgroundImage: {
+				'gradient-festive': 'var(--gradient-festive)',
+				'gradient-sky': 'var(--gradient-sky)'
+			},
+			boxShadow: {
+				'festive': 'var(--shadow-festive)',
+				'card-festive': 'var(--shadow-card)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

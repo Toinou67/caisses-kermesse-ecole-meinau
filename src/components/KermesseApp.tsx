@@ -16,19 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Edit, BarChart3, ShoppingCart, Settings, RotateCcw } from "lucide-react";
-import { mockArticles, mockSales } from "@/data/mockData";
+import { mockArticles, mockSales, mockCategories } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
 const CASH_REGISTERS = ['Caisse 1', 'Caisse 2', 'Caisse 3', 'Caisse 4'];
@@ -36,7 +25,8 @@ const CASH_REGISTERS = ['Caisse 1', 'Caisse 2', 'Caisse 3', 'Caisse 4'];
 export const KermesseApp = () => {
   const [articles, setArticles] = useState<Article[]>(mockArticles);
   const [sales, setSales] = useState<Sale[]>(mockSales);
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
+  const [categories, setCategories] = useState<Category[]>(mockCategories);
+  const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
   const [selectedCashRegister, setSelectedCashRegister] = useState<string>('Caisse 1');
   const [selectedCashRegisterForStats, setSelectedCashRegisterForStats] = useState<string | 'all'>('all');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -45,14 +35,14 @@ export const KermesseApp = () => {
   // Load from localStorage on mount
   useEffect(() => {
     const savedArticles = localStorage.getItem('kermesse-articles');
-    const savedSales = localStorage.getItem('kermesse-sales');
+    const savedCategories = localStorage.getItem('kermesse-categories');
     const savedCashRegister = localStorage.getItem('kermesse-cash-register');
     
     if (savedArticles) {
       setArticles(JSON.parse(savedArticles));
     }
-    if (savedSales) {
-      setSales(JSON.parse(savedSales));
+    if (savedCategories) {
+      setCategories(JSON.parse(savedCategories));
     }
     if (savedCashRegister) {
       setSelectedCashRegister(savedCashRegister);
@@ -65,8 +55,8 @@ export const KermesseApp = () => {
   }, [articles]);
 
   useEffect(() => {
-    localStorage.setItem('kermesse-sales', JSON.stringify(sales));
-  }, [sales]);
+    localStorage.setItem('kermesse-categories', JSON.stringify(categories));
+  }, [categories]);
 
   useEffect(() => {
     localStorage.setItem('kermesse-cash-register', selectedCashRegister);
@@ -74,7 +64,7 @@ export const KermesseApp = () => {
 
   const filteredArticles = selectedCategory === 'all' 
     ? articles 
-    : articles.filter(article => article.category === selectedCategory);
+    : articles.filter(article => article.categoryId === selectedCategory);
 
   const handleSale = (articleId: string) => {
     const article = articles.find(a => a.id === articleId);
@@ -90,9 +80,6 @@ export const KermesseApp = () => {
     };
 
     setSales(prev => [...prev, newSale]);
-    setArticles(prev => prev.map(a => 
-      a.id === articleId ? { ...a, sales: a.sales + 1 } : a
-    ));
 
     toast({
       title: "Vente enregistrée! 🎉",
@@ -131,6 +118,18 @@ export const KermesseApp = () => {
     });
   };
 
+  const handleSaveCategory = (categoryData: Omit<Category, 'id'>) => {
+    const newCategory: Category = {
+      ...categoryData,
+      id: Date.now().toString()
+    };
+    setCategories(prev => [...prev, newCategory]);
+    toast({
+      title: "Catégorie créée! ✨",
+      description: `${categoryData.name} a été ajoutée`,
+    });
+  };
+
   const handleEditArticle = (article: Article) => {
     // TODO: Implement edit functionality
     console.log('Edit article:', article);
@@ -150,21 +149,22 @@ export const KermesseApp = () => {
     });
   };
 
-  const handleResetCashRegister = () => {
-    // Supprimer toutes les ventes de la caisse actuelle
-    const cashRegisterSales = sales.filter(sale => sale.cashRegister === selectedCashRegister);
-    setSales(prev => prev.filter(sale => sale.cashRegister !== selectedCashRegister));
-    
-    // Décrémenter les compteurs de ventes des articles concernés
-    const salesByArticle = cashRegisterSales.reduce((acc, sale) => {
-      acc[sale.articleId] = (acc[sale.articleId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
+  const handleResetAll = () => {
+    setSales([]);
     setArticles(prev => prev.map(article => ({
       ...article,
-      sales: Math.max(0, article.sales - (salesByArticle[article.id] || 0))
+      sales: 0
     })));
+
+    toast({
+      title: "Tout réinitialisé! 🔄",
+      description: "Toutes les ventes et compteurs ont été supprimés",
+      variant: "destructive",
+    });
+  };
+
+  const handleResetCashRegister = () => {
+    setSales(prev => prev.filter(sale => sale.cashRegister !== selectedCashRegister));
 
     toast({
       title: "Caisse réinitialisée! 🔄",
@@ -211,36 +211,15 @@ export const KermesseApp = () => {
                 </SelectContent>
               </Select>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30"
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Réinitialiser
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Réinitialiser la caisse ?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Cette action va supprimer définitivement toutes les ventes de <strong>{selectedCashRegister}</strong>.
-                      Cette action ne peut pas être annulée.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Annuler</AlertDialogCancel>
-                    <AlertDialogAction 
-                      onClick={handleResetCashRegister}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      Réinitialiser
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <Button 
+                onClick={handleResetCashRegister}
+                variant="outline" 
+                size="sm"
+                className="bg-white/20 text-white border-white/30 hover:bg-white/30"
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Réinitialiser
+              </Button>
 
               <Badge variant="secondary" className="bg-white/20 text-white">
                 {currentCashRegisterSales} ventes - {currentCashRegisterRevenue.toFixed(2)}€
@@ -281,7 +260,7 @@ export const KermesseApp = () => {
                   <Settings className="w-5 h-5 mr-2" />
                   {isEditMode ? 'Mode vente' : 'Mode édition'}
                 </Button>
-                {isEditMode && <ArticleForm onSave={handleSaveArticle} />}
+                {isEditMode && <ArticleForm onSave={handleSaveArticle} categories={categories} />}
               </div>
             </div>
 
@@ -289,6 +268,8 @@ export const KermesseApp = () => {
             <CategoryFilter 
               selectedCategory={selectedCategory}
               onCategoryChange={setSelectedCategory}
+              categories={categories}
+              onAddCategory={handleSaveCategory}
             />
 
             {/* Articles Grid */}
@@ -301,6 +282,7 @@ export const KermesseApp = () => {
                   onEdit={handleEditArticle}
                   onDelete={handleDeleteArticle}
                   isEditMode={isEditMode}
+                  categories={categories}
                 />
               ))}
             </div>
@@ -316,7 +298,7 @@ export const KermesseApp = () => {
                       : 'Essayez une autre catégorie ou ajoutez de nouveaux articles'
                     }
                   </p>
-                  {isEditMode && <ArticleForm onSave={handleSaveArticle} />}
+                  {isEditMode && <ArticleForm onSave={handleSaveArticle} categories={categories} />}
                 </CardContent>
               </Card>
             )}
@@ -325,22 +307,33 @@ export const KermesseApp = () => {
           <TabsContent value="stats" className="space-y-6">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-primary">Tableau de bord</h2>
-              <Select 
-                value={selectedCashRegisterForStats} 
-                onValueChange={setSelectedCashRegisterForStats}
-              >
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les caisses</SelectItem>
-                  {CASH_REGISTERS.map((register) => (
-                    <SelectItem key={register} value={register}>
-                      {register}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex gap-2 items-center">
+                <Select 
+                  value={selectedCashRegisterForStats} 
+                  onValueChange={setSelectedCashRegisterForStats}
+                >
+                  <SelectTrigger className="w-48">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les caisses</SelectItem>
+                    {CASH_REGISTERS.map((register) => (
+                      <SelectItem key={register} value={register}>
+                        {register}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Button 
+                  onClick={handleResetAll}
+                  variant="destructive" 
+                  size="sm"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Tout réinitialiser
+                </Button>
+              </div>
             </div>
 
             <DirectSaleForm onAddSale={handleDirectSale} />
@@ -349,6 +342,7 @@ export const KermesseApp = () => {
               articles={articles}
               sales={sales}
               selectedCashRegister={selectedCashRegisterForStats}
+              categories={categories}
             />
           </TabsContent>
         </Tabs>

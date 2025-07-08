@@ -1,15 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Category, CATEGORIES } from "@/types/kermesse";
+import { Category } from "@/types/kermesse";
+import { CategoryForm } from "./CategoryForm";
 
 interface CategoryFilterProps {
-  selectedCategory: Category | 'all';
-  onCategoryChange: (category: Category | 'all') => void;
+  selectedCategory: string | 'all';
+  onCategoryChange: (categoryId: string | 'all') => void;
+  categories: Category[];
+  onAddCategory: (category: Omit<Category, 'id'>) => void;
 }
 
-export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryFilterProps) => {
+export const CategoryFilter = ({ 
+  selectedCategory, 
+  onCategoryChange, 
+  categories, 
+  onAddCategory 
+}: CategoryFilterProps) => {
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-6 items-center">
       <Button
         variant={selectedCategory === 'all' ? "default" : "outline"}
         onClick={() => onCategoryChange('all')}
@@ -18,16 +25,18 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
         🎪 Tout voir
       </Button>
       
-      {CATEGORIES.map((category) => (
+      {categories.map((category) => (
         <Button
-          key={category.value}
-          variant={selectedCategory === category.value ? "default" : "outline"}
-          onClick={() => onCategoryChange(category.value)}
+          key={category.id}
+          variant={selectedCategory === category.id ? "default" : "outline"}
+          onClick={() => onCategoryChange(category.id)}
           className="h-12 px-6 font-medium"
         >
-          {category.label}
+          {category.icon} {category.name}
         </Button>
       ))}
+      
+      <CategoryForm onSave={onAddCategory} />
     </div>
   );
 };

@@ -1,9 +1,8 @@
-import { Article } from "@/types/kermesse";
+import { Article, Category } from "@/types/kermesse";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Edit2, Trash2 } from "lucide-react";
-import { CATEGORIES } from "@/types/kermesse";
 
 interface ArticleCardProps {
   article: Article;
@@ -11,6 +10,7 @@ interface ArticleCardProps {
   onEdit?: (article: Article) => void;
   onDelete?: (articleId: string) => void;
   isEditMode?: boolean;
+  categories: Category[];
 }
 
 export const ArticleCard = ({ 
@@ -18,9 +18,10 @@ export const ArticleCard = ({
   onSale, 
   onEdit, 
   onDelete, 
-  isEditMode = false 
+  isEditMode = false,
+  categories 
 }: ArticleCardProps) => {
-  const category = CATEGORIES.find(cat => cat.value === article.category);
+  const category = categories.find(cat => cat.id === article.categoryId);
   
   return (
     <Card className="shadow-card-festive hover:shadow-festive transition-all duration-300 hover:scale-105 relative group">
@@ -32,7 +33,7 @@ export const ArticleCard = ({
               variant="secondary" 
               className="text-xs font-medium bg-secondary/20"
             >
-              {category.label}
+              {category.icon} {category.name}
             </Badge>
           )}
         </div>

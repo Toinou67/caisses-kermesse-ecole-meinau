@@ -2,7 +2,7 @@ export interface Article {
   id: string;
   name: string;
   price: number;
-  category: Category;
+  categoryId: string;
   icon: string;
   sales: number;
 }
@@ -16,18 +16,15 @@ export interface Sale {
   cashRegister: string;
 }
 
-export type Category = 'boissons' | 'nourriture' | 'jeux' | 'activités' | 'autre';
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+}
 
 export interface CashRegister {
   id: string;
   name: string;
   totalSales: number;
 }
-
-export const CATEGORIES: { value: Category; label: string; color: string }[] = [
-  { value: 'boissons', label: '🥤 Boissons', color: 'accent' },
-  { value: 'nourriture', label: '🍿 Nourriture', color: 'festive-orange' },
-  { value: 'jeux', label: '🎯 Jeux', color: 'primary' },
-  { value: 'activités', label: '🎪 Activités', color: 'festive-purple' },
-  { value: 'autre', label: '🎈 Autre', color: 'festive-green' },
-];

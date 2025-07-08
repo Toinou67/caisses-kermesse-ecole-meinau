@@ -1,6 +1,14 @@
-import { Article, Sale } from "@/types/kermesse";
+import { Article, Sale, Category } from "@/types/kermesse";
 
 export const mockArticles: Article[] = [];
+
+export const mockCategories: Category[] = [
+  { id: '1', name: 'Boissons', icon: '🥤', color: 'accent' },
+  { id: '2', name: 'Nourriture', icon: '🍿', color: 'festive-orange' },
+  { id: '3', name: 'Jeux', icon: '🎯', color: 'primary' },
+  { id: '4', name: 'Activités', icon: '🎪', color: 'festive-purple' },
+  { id: '5', name: 'Autre', icon: '🎈', color: 'festive-green' },
+];
 
 export const mockSales: Sale[] = [
   {

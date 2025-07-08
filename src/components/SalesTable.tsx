@@ -1,4 +1,4 @@
-import { Article, Sale } from "@/types/kermesse";
+import { Article, Sale, Category } from "@/types/kermesse";
 import {
   Table,
   TableBody,
@@ -9,15 +9,15 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CATEGORIES } from "@/types/kermesse";
 
 interface SalesTableProps {
   articles: Article[];
   sales: Sale[];
   selectedCashRegister: string | 'all';
+  categories: Category[];
 }
 
-export const SalesTable = ({ articles, sales, selectedCashRegister }: SalesTableProps) => {
+export const SalesTable = ({ articles, sales, selectedCashRegister, categories }: SalesTableProps) => {
   const filteredSales = selectedCashRegister === 'all' 
     ? sales 
     : sales.filter(sale => sale.cashRegister === selectedCashRegister);
@@ -25,13 +25,13 @@ export const SalesTable = ({ articles, sales, selectedCashRegister }: SalesTable
   const articleStats = articles.map(article => {
     const articleSales = filteredSales.filter(sale => sale.articleId === article.id);
     const totalRevenue = articleSales.length * article.price;
-    const category = CATEGORIES.find(cat => cat.value === article.category);
+    const category = categories.find(cat => cat.id === article.categoryId);
     
     return {
       ...article,
       totalSales: articleSales.length,
       totalRevenue,
-      category: category?.label || article.category
+      categoryName: category ? `${category.icon} ${category.name}` : 'Sans catégorie'
     };
   });
 
@@ -72,7 +72,7 @@ export const SalesTable = ({ articles, sales, selectedCashRegister }: SalesTable
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline" className="text-xs">
-                    {article.category}
+                    {article.categoryName}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-center font-medium">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Article, Category } from "@/types/kermesse";
+import { Category } from "@/types/kermesse";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,11 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 
-interface ArticleFormProps {
-  article?: Article;
-  onSave: (article: Omit<Article, 'id' | 'sales'>) => void;
+interface CategoryFormProps {
+  onSave: (category: Omit<Category, 'id'>) => void;
   trigger?: React.ReactNode;
-  categories: Category[];
 }
 
 const EXTENDED_EMOJI_OPTIONS = [
@@ -43,22 +41,28 @@ const EXTENDED_EMOJI_OPTIONS = [
   '❤️', '💙', '💚', '💛', '🧡', '💜', '🖤', '🤍', '🤎', '💗', '💖', '💕', '💓', '💘', '💝', '💟', '☮️', '✝️', '☪️', '🕉️', '☸️', '✡️', '🔯', '🕎', '☯️', '☦️', '🛐', '⛎', '♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'
 ];
 
-export const ArticleForm = ({ article, onSave, trigger, categories }: ArticleFormProps) => {
+const COLOR_OPTIONS = [
+  { value: 'primary', label: 'Rouge festif', color: 'hsl(var(--primary))' },
+  { value: 'secondary', label: 'Jaune soleil', color: 'hsl(var(--secondary))' },
+  { value: 'accent', label: 'Bleu ciel', color: 'hsl(var(--accent))' },
+  { value: 'festive-green', label: 'Vert festif', color: 'hsl(var(--festive-green))' },
+  { value: 'festive-orange', label: 'Orange festif', color: 'hsl(var(--festive-orange))' },
+  { value: 'festive-purple', label: 'Violet festif', color: 'hsl(var(--festive-purple))' },
+];
+
+export const CategoryForm = ({ onSave, trigger }: CategoryFormProps) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
-    name: article?.name || '',
-    price: article?.price || 0,
-    categoryId: article?.categoryId || categories[0]?.id || '',
-    icon: article?.icon || '🎈'
+    name: '',
+    icon: '🎪',
+    color: 'primary'
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.price > 0 && formData.categoryId) {
+    if (formData.name.trim()) {
       onSave(formData);
-      if (!article) {
-        setFormData({ name: '', price: 0, categoryId: categories[0]?.id || '', icon: '🎈' });
-      }
+      setFormData({ name: '', icon: '🎪', color: 'primary' });
       setOpen(false);
     }
   };
@@ -67,57 +71,47 @@ export const ArticleForm = ({ article, onSave, trigger, categories }: ArticleFor
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="h-12 px-6 bg-gradient-festive hover:scale-105 transition-transform shadow-festive">
-            <Plus className="w-5 h-5 mr-2" />
-            Nouvel article
+          <Button variant="outline" size="sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Nouvelle catégorie
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {article ? 'Modifier l\'article' : 'Nouvel article'}
-          </DialogTitle>
+          <DialogTitle>Nouvelle catégorie</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="name">Nom de l'article</Label>
+            <Label htmlFor="name">Nom de la catégorie</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ex: Coca Cola"
+              placeholder="Ex: Boissons"
               required
             />
           </div>
           
           <div>
-            <Label htmlFor="price">Prix (€)</Label>
-            <Input
-              id="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.price}
-              onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-              placeholder="2.50"
-              required
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="category">Catégorie</Label>
+            <Label htmlFor="color">Couleur</Label>
             <Select
-              value={formData.categoryId}
-              onValueChange={(value: string) => setFormData({ ...formData, categoryId: value })}
+              value={formData.color}
+              onValueChange={(value) => setFormData({ ...formData, color: value })}
             >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.icon} {category.name}
+                {COLOR_OPTIONS.map((color) => (
+                  <SelectItem key={color.value} value={color.value}>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-4 h-4 rounded-full border" 
+                        style={{ backgroundColor: color.color }}
+                      />
+                      {color.label}
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -149,7 +143,7 @@ export const ArticleForm = ({ article, onSave, trigger, categories }: ArticleFor
               Annuler
             </Button>
             <Button type="submit" className="flex-1 bg-gradient-festive">
-              {article ? 'Modifier' : 'Créer'}
+              Créer
             </Button>
           </div>
         </form>
